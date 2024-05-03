@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Agregar Paciente</title>
+    <link rel="stylesheet" href="/styles.css"> <!-- Enlaza tu archivo CSS -->
+    <a href="Tabla.html" class="link-navegacion">Ver lista de pacientes</a>
+</head>
+
+<body>
+<h1>Agregar Paciente</h1>
+<!-- Formulario para agregar un paciente -->
+<form id="formularioAgregarPaciente">
+    <label for="nombre">Nombre:</label>
+    <input type="text" id="nombre" name="nombre" required>
+    <br>
+
+    <label for="correoElectronico">Correo Electrónico:</label>
+    <input type="email" id="correoElectronico" name="correoElectronico" required>
+    <br>
+
+    <label for="telefono">Teléfono:</label>
+    <input type="text" id="telefono" name="telefono">
+    <br>
+
+    <label for="direccion">Dirección:</label>
+    <input type="text" id="direccion" name="direccion">
+    <br>
+
+    <button type="submit">Agregar Paciente</button>
+</form>
+<!-- Código JavaScript -->
+<script>
+    // Código JavaScript para agregar pacientes
+    const formularioAgregarPaciente = document.getElementById("formularioAgregarPaciente");
+
+    formularioAgregarPaciente.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        // Captura los datos del formulario
+        const nombre = document.getElementById("nombre").value;
+        const correoElectronico = document.getElementById("correoElectronico").value;
+        const telefono = document.getElementById("telefono").value;
+        const direccion = document.getElementById("direccion").value;
+
+        // Crea un objeto con los datos del paciente
+        const paciente = {
+            nombre,
+            correoElectronico,
+            telefono,
+            direccion
+        };
+
+        // Envía los datos a la API REST
+        const response = await fetch("/api/pacientes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(paciente)
+        });
+
+        if (response.ok) {
+            alert("Paciente agregado con éxito.");
+            // Limpia el formulario
+            formularioAgregarPaciente.reset();
+        } else {
+            alert("Ocurrió un error al agregar el paciente.");
+        }
+    });
+</script>
+</body>
+
+</html>

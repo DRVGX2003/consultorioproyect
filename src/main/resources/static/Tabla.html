@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Pacientes</title>
+    <link rel="stylesheet" href="/styles.css"> <!-- Enlaza tu archivo CSS -->
+    <a href="ConsultorioMedico.html" class="link-navegacion">Agregar nuevo paciente</a>
+</head>
+<body>
+<h1>Lista de Pacientes</h1>
+
+<!-- Tabla para mostrar los pacientes -->
+<table id="tablaPacientes">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Correo Electrónico</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody id="cuerpoTabla">
+    <!-- Los datos de los pacientes se cargarán aquí -->
+    </tbody>
+</table>
+
+<!-- Formulario oculto para editar pacientes -->
+<form id="formularioEdicion" style="display: none;">
+    <input type="hidden" id="pacienteId" name="pacienteId">
+
+    <label for="nombreEdicion">Nombre:</label>
+    <input type="text" id="nombreEdicion" name="nombre" required>
+    <br>
+
+    <label for="correoElectronicoEdicion">Correo Electrónico:</label>
+    <input type="email" id="correoElectronicoEdicion" name="correoElectronico" required>
+    <br>
+
+    <label for="telefonoEdicion">Teléfono:</label>
+    <input type="text" id="telefonoEdicion" name="telefono">
+    <br>
+
+    <label for="direccionEdicion">Dirección:</label>
+    <input type="text" id="direccionEdicion" name="direccion">
+    <br>
+
+    <button type="submit">Guardar Cambios</button>
+</form>
+
+<!-- Código JavaScript -->
+<script>
+    // Código JavaScript para cargar pacientes y manejar el formulario de edición
+    async function cargarPacientes() {
+        const response = await fetch("/api/pacientes");
+        const pacientes = await response.json();
+
+        // Limpia la tabla
+        const cuerpoTabla = document.getElementById("cuerpoTabla");
+        cuerpoTabla.innerHTML = "";
+
+        // Llena la tabla con los pacientes
+        pacientes.forEach(paciente => {
+            const fila = cuerpoTabla.insertRow();
+
+            // Añadir celdas para cada propiedad del paciente
+            fila.insertCell().textContent = paciente.id;
+            fila.insertCell().textContent = paciente.nombre;
+            fila.insertCell().textContent = paciente.correoElectronico;
+            fila.insertCell().textContent = paciente.telefono;
+            fila.insertCell().textContent = paciente.direccion;
+
+            // Crear celda de acciones
+            const celdaAcciones = fila.insertCell();
+
+            // Botón de editar
+            const botonEditar = document.createElement("button");
+            botonEditar.textContent = "Editar";
+            botonEditar.onclick = () => mostrarFormularioEdicion(paciente.id);
+            celdaAcciones.appendChild(botonEditar);
+
+            // Botón de eliminar
+            const botonEliminar = document.createElement("button");
+            botonEliminar.textContent = "Eliminar";
+            botonEliminar.onclick = () => eliminarPaciente(paciente.id);
+            celdaAcciones.appendChild(botonEliminar);
+        });
+    }
+
+    // Función para mostrar el formulario de edición pre-rellenado con los datos del paciente
+    async function mostrarFormularioEdicion(pacienteId) {
+        const response = await fetch(`/api/pacientes/${pacienteId}`);
+        const paciente = await response.json();
+
+        const formularioEdicion = document.getElementById("formularioEdicion");
+
+        // Pre-rellenar el formulario con los datos del paciente
+        formularioEdicion.pacienteId.value = paciente.id;
+        formularioEdicion.nombreEdicion.value = paciente.nombre;
+        formularioEdicion.correoElectronicoEdicion.value = paciente.correoElectronico;
+        formularioEdicion.telefonoEdicion.value = paciente.telefono;
+        formularioEdicion.direccionEdicion.value = paciente.direccion;
+
+        // Mostrar el formulario de edición
+        formularioEdicion.style.display = 'block';
+    }
+
+    // Función para eliminar un paciente
+    async function eliminarPaciente(pacienteId) {
+        const response = await fetch(`/api/pacientes/${pacienteId}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            alert("Paciente eliminado con éxito.");
+            // Actualiza la lista de pacientes
+            cargarPacientes();
+        } else {
+            alert("Ocurrió un error al eliminar el paciente.");
+        }
+    }
+
+    // Controlador de eventos para manejar el formulario de edición
+    const formularioEdicion = document.getElementById("formularioEdicion");
+
+    formularioEdicion.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const pacienteId = formularioEdicion.pacienteId.value;
+        const nombre = formularioEdicion.nombreEdicion.value;
+        const correoElectronico = formularioEdicion.correoElectronicoEdicion.value;
+        const telefono = formularioEdicion.telefonoEdicion.value;
+        const direccion = formularioEdicion.direccionEdicion.value;
+
+        // Crear un objeto con los datos actualizados del paciente
+        const datosActualizados = {
+            nombre,
+            correoElectronico,
+            telefono,
+            direccion
+        };
+
+        // Enviar los datos actualizados a la API REST
+        const response = await fetch(`/api/pacientes/${pacienteId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(datosActualizados)
+        });
+
+        if (response.ok) {
+            alert("Paciente actualizado con éxito.");
+            formularioEdicion.reset();
+            formularioEdicion.style.display = 'none';
+            // Vuelve a cargar los pacientes para reflejar los cambios
+            cargarPacientes();
+        } else {
+            alert("Ocurrió un error al actualizar el paciente.");
+        }
+    });
+
+    // Carga los pacientes cuando se carga la página
+    window.addEventListener("load", cargarPacientes);
+</script>
+</body>
+
+</html>
